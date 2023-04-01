@@ -12,6 +12,7 @@ import 'package:http_parser/http_parser.dart';
 class CheckinController extends GetxController {
   var isLoading = true.obs;
   var checkins = <CheckinModel>[].obs;
+
   // Future<void> save(
   //     {required employeeId, latitude, longitude, address, image}) async {
   //   AlertApp().loadingIndicator();
@@ -115,6 +116,28 @@ class CheckinController extends GetxController {
     try {
       isLoading.value = true;
       final response = await http.get(Uri.parse('$base_url/api/inspections'));
+      final resp = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        isLoading.value = false;
+        checkins.value = CheckinModel.fromJsonToList(resp['data']);
+      } else {
+        isLoading.value = false;
+        checkins.value = [];
+      }
+    } catch (e) {
+      checkins.value = [];
+      isLoading.value = false;
+      print(e);
+    }
+  }
+
+  Future<void> fetchCheckinByEmployeId({id}) async {
+    print(id);
+    checkins.clear();
+    try {
+      isLoading.value = true;
+      final response = await http
+          .get(Uri.parse('$base_url/api/inspections?employee_id=${id}'));
       final resp = jsonDecode(response.body);
       if (response.statusCode == 200) {
         isLoading.value = false;

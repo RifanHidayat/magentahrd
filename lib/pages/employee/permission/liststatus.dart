@@ -200,7 +200,7 @@ class _ListstatusPermissionPageEmployeeState
       permission_category_id) {
     return Container(
       child: Row(
-        mainAxisAlignment: MainAxisAlignmen.end,
+        // mainAxisAlignment: MainAxisAlignmen.end,
         children: <Widget>[
           Container(
             margin: EdgeInsets.only(right: 10),

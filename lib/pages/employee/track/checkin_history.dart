@@ -45,13 +45,12 @@ class _CheckinHistoryPageState extends State<CheckinHistoryPage> {
       body: Container(
         width: Get.mediaQuery.size.width,
         height: Get.mediaQuery.size.height,
-        child:   SingleChildScrollView(
+        child: SingleChildScrollView(
           child: Container(
             margin: EdgeInsets.only(top: 20),
             child: Container(
               child: Column(
-                children:
-                    List.generate(controller.checkins.length, (index) {
+                children: List.generate(controller.checkins.length, (index) {
                   var data = controller.checkins[index];
 
                   var d = DateTime.parse(data.dateTime.toString());
@@ -84,8 +83,7 @@ class _CheckinHistoryPageState extends State<CheckinHistoryPage> {
                                 height: 15,
                                 decoration: BoxDecoration(
                                     color: baseColor,
-                                    borderRadius:
-                                        BorderRadius.circular(20)),
+                                    borderRadius: BorderRadius.circular(20)),
                               ),
                               Container(
                                 child: Row(
@@ -117,8 +115,7 @@ class _CheckinHistoryPageState extends State<CheckinHistoryPage> {
                                   child: Row(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: <Widget>[
                                       Hero(
                                           tag: "avatar-1",
@@ -132,13 +129,11 @@ class _CheckinHistoryPageState extends State<CheckinHistoryPage> {
                                               width: 100,
                                               height: 120,
                                               child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.only(
-                                                        bottomLeft: Radius
-                                                            .circular(5),
-                                                        topLeft:
-                                                            Radius.circular(
-                                                                5)),
+                                                borderRadius: BorderRadius.only(
+                                                    bottomLeft:
+                                                        Radius.circular(5),
+                                                    topLeft:
+                                                        Radius.circular(5)),
                                                 child: Image.network(
                                                   "/${data.image}",
                                                   fit: BoxFit.fill,
@@ -162,31 +157,27 @@ class _CheckinHistoryPageState extends State<CheckinHistoryPage> {
                                                     child: Text(
                                                       "${DateFormat("yyyy-mm-dd").format(DateTime.parse(data.dateTime.toString()))}",
                                                       style: TextStyle(
-                                                          color:
-                                                              blackColor2,
-                                                          letterSpacing:
-                                                              0.5,
+                                                          color: blackColor2,
+                                                          letterSpacing: 0.5,
                                                           fontSize: 12,
                                                           fontFamily:
                                                               "roboto-regular"),
                                                     ),
                                                   ),
                                                   Container(
-                                                    width: Get.mediaQuery
-                                                            .size.width *
+                                                    width: Get.mediaQuery.size
+                                                            .width *
                                                         0.3,
-                                                    alignment: Alignment
-                                                        .centerRight,
+                                                    alignment:
+                                                        Alignment.centerRight,
                                                     child: Row(
                                                       mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .end,
+                                                          MainAxisAlignment.end,
                                                       children: <Widget>[
                                                         Container(
                                                           child: Icon(
                                                             Icons.history,
-                                                            color:
-                                                                baseColor,
+                                                            color: baseColor,
                                                             size: 18,
                                                           ),
                                                         ),
@@ -201,8 +192,7 @@ class _CheckinHistoryPageState extends State<CheckinHistoryPage> {
                                                                     baseColor2,
                                                                 letterSpacing:
                                                                     0.5,
-                                                                fontSize:
-                                                                    12,
+                                                                fontSize: 12,
                                                                 fontFamily:
                                                                     "roboto-regular"),
                                                           ),
@@ -218,9 +208,9 @@ class _CheckinHistoryPageState extends State<CheckinHistoryPage> {
                                             ),
                                             Expanded(
                                               child: Container(
-                                                width: Get.mediaQuery.size
-                                                        .height *
-                                                    0.25,
+                                                width:
+                                                    Get.mediaQuery.size.height *
+                                                        0.25,
                                                 child: Text(
                                                   "${data.address} ",
                                                   style: TextStyle(
