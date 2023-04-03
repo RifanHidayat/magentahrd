@@ -36,6 +36,10 @@ import 'package:magentahrd/pages/employee/track/photo.dart';
 import 'package:magentahrd/controler/checkin.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:async';
+import 'package:geocode/geocode.dart';
+import 'package:geocoding/geocoding.dart';
 
 const double CAMERA_ZOOM = 16;
 const double CAMERA_TILT = 80;
@@ -75,13 +79,14 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
 // the user's initial location and current location
 // as it moves
-  LocationData? currentLocation;
+  // LocationData? currentLocation;
+  Position? currentLocation;
 
 // a reference to the destination location
   LocationData? destinationLocation;
 
 // wrapper around the location API
-  Location? location;
+
   double pinPillPosition = -100;
   UserLocation currentlySelectedPin = UserLocation(
       pinPath: '',
@@ -93,6 +98,8 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   UserLocation? destinationPinInfo;
   StreamSubscription<LocationData>? locationSubscription;
   StreamSubscription<FGBGType>? subscription;
+
+  Timer? _timer;
 
   // Location location = new Location();
   // LocationData? _locationData;
@@ -119,46 +126,25 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    getDataPref();
-    controller.fetchCheckin();
-    // initializeService();
-    //didChangeAppLifecycleState(appLifecycleState);
-    currentLocationChange();
-    // timer = Timer.periodic(Duration(seconds: 5), (Timer t) => sendData());
-
-    // FGBGEvents.stream.listen((event) {
-
-    //     currentLocationChange();
-
-    //    // FGBGType.foreground or FGBGType.background
-    //   });
-
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-
-    // create an instance of Location
-
-    // location.onLocationChanged().l
-    // set custom marker pinsF
-    //  setSourceAndDestinationIcons();
-    // set the initial location
-    setInitialLocation();
+    getDataPref();
+    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      _getCurrentLocation();
+    });
   }
 
-  void currentLocationChange() {
-    locationSubscription?.cancel();
-    location = new Location();
-    polylinePoints = PolylinePoints();
-    locationSubscription =
-        location!.onLocationChanged.listen((LocationData cLoc) {
-      currentLocation = cLoc;
-      print('waktu ${cLoc}');
+  _getCurrentLocation() {
+    Geolocator.getCurrentPosition().then((Position position) {
+      setState(() {
+        currentLocation = position;
+
+        updatePinOnMap();
+      });
 
       GetAddressFromLatLong(double.parse(currentLocation!.latitude.toString()),
           double.parse(currentLocation!.longitude.toString()));
-      //  sendData();
-
-      updatePinOnMap();
+    }).catchError((e) {
+      print(e);
     });
   }
 
@@ -175,18 +161,6 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
       'assets/pin-default.png',
     ).then((onValue) {
       destinationIcon = onValue;
-    });
-  }
-
-  void setInitialLocation() async {
-    // set the initial location by pulling the user's
-    // current location from the location's getLocation()
-    currentLocation = await location!.getLocation();
-
-    // hard-coded destination for this example
-    destinationLocation = LocationData.fromMap({
-      "latitude": DEST_LOCATION.latitude,
-      "longitude": DEST_LOCATION.longitude
     });
   }
 
@@ -355,6 +329,7 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
       employeeId = sharedPreferences.getString("employee_id") ?? "22";
     });
 
+    controller.fetchCheckinByEmployeId(id: employeeId);
     await FirebaseFirestore.instance
         .collection('employee_locations')
         .where("employee_id", isEqualTo: employeeId ?? "22")
@@ -784,10 +759,34 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                                           )
                                         : Column(
                                             children: List.generate(
-                                                controller.checkins.length,
-                                                (index) {
-                                              var data =
-                                                  controller.checkins[index];
+                                                controller.checkins
+                                                    .where((p0) {
+                                                      return DateFormat(
+                                                                  "yyyy-MM-dd")
+                                                              .format(DateTime
+                                                                  .parse(p0
+                                                                      .dateTime
+                                                                      .toString())) ==
+                                                          DateFormat(
+                                                                  "yyyy-MM-dd")
+                                                              .format(DateTime
+                                                                  .parse(DateTime
+                                                                          .now()
+                                                                      .toString()));
+                                                    })
+                                                    .toList()
+                                                    .length, (index) {
+                                              var data = controller.checkins
+                                                  .where((p0) {
+                                                return DateFormat("yyyy-MM-dd")
+                                                        .format(DateTime.parse(
+                                                            p0.dateTime
+                                                                .toString())) ==
+                                                    DateFormat("yyyy-MM-dd")
+                                                        .format(DateTime.parse(
+                                                            DateTime.now()
+                                                                .toString()));
+                                              }).toList()[index];
                                               var d = DateTime.parse(
                                                   data.dateTime.toString());
 
@@ -1160,8 +1159,9 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   @override
   void dispose() {
     // TODO: implement dispose
-    ///WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     timer!.cancel();
+    _timer!.cancel();
     // if (isTrack==false){
     //
     // }

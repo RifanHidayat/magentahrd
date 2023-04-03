@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocode/geocode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geocoding/geocoding.dart';
 
 class LocaationController extends GetxController {
   var addres = "".obs;
@@ -25,7 +26,7 @@ class LocaationController extends GetxController {
   var empoyeeId = "".obs;
   getCurrentLocation() {
     getDatapref();
-    geolocator
+     Geolocator
         .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
         .then((Position position) {
       _currentPosition = position;
@@ -39,11 +40,17 @@ class LocaationController extends GetxController {
 
   //convert lat dan long to address
   getAddressFromLatLng() async {
+   
+
     try {
-      List<Placemark> p = await geolocator.placemarkFromCoordinates(
-          _currentPosition!.latitude, _currentPosition!.longitude);
+      List<Placemark> p = await placemarkFromCoordinates(
+          double.parse(_currentPosition!.latitude.toString()), double.parse(_currentPosition!.longitude.toString()));
       Placemark place = p[0];
-      addres.value = "${place.locality}, ${place.postalCode}, ${place.country}";
+   
+       addres.value =
+            "${place.street} ${place.name}, ${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}, ${place.administrativeArea}, ${place.postalCode}";
+       
+       
     } catch (e) {
       print(e);
     }

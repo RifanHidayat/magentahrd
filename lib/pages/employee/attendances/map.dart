@@ -9,7 +9,7 @@ import 'package:magentahrd/models/map.dart';
 import 'package:magentahrd/services/api_clien.dart';
 import 'package:magentahrd/utalities/color.dart';
 import 'package:magentahrd/utalities/constants.dart';
-
+// import 'package:magentahrd/utalities/font.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,18 +17,19 @@ class Maps extends StatefulWidget {
   @override
   _MapsState createState() => _MapsState();
 
-  Maps({this.address,
-    this.longitude,
-    this.latitude,
-    this.gender,
-    this.last_name,
-    this.firts_name,
-    this.profile_background,
-    this.distance,
-    this.longMainoffice,
-    this.latmainoffice,
-    this.image,
-    this.departement_name});
+  Maps(
+      {this.address,
+      this.longitude,
+      this.latitude,
+      this.gender,
+      this.last_name,
+      this.firts_name,
+      this.profile_background,
+      this.distance,
+      this.longMainoffice,
+      this.latmainoffice,
+      this.image,
+      this.departement_name});
 
   var address,
       latitude,
@@ -51,7 +52,7 @@ class _MapsState extends State<Maps> {
   BitmapDescriptor? companyIcon;
   BitmapDescriptor? _markerIcon;
   var employee_id;
-  var _latmainoffice,_longmainoffice;
+  var _latmainoffice, _longmainoffice;
 
   Widget _child = Center(
     child: Text('Loading...'),
@@ -59,8 +60,6 @@ class _MapsState extends State<Maps> {
   BitmapDescriptor? _sourceIcon;
 
   double _pinPillPosition = -100;
-
-
 
   PinData? _sourcePinInfo;
 
@@ -98,7 +97,7 @@ class _MapsState extends State<Maps> {
   // }
 
   void _getCurrentLocation() async {
-    Position res = await Geolocator().getCurrentPosition();
+    Position res = await Geolocator.getCurrentPosition();
     setState(() {
       position = res;
       _child = _mapWidget();
@@ -121,20 +120,22 @@ class _MapsState extends State<Maps> {
       ///user marker
       Marker(
         markerId: MarkerId('user'),
-        position: LatLng(widget.latitude, widget.longitude),
+        position: LatLng(
+            double.parse(widget.latitude), double.parse(widget.longitude)),
         icon: BitmapDescriptor.defaultMarker,
       )
     ].toSet();
   }
+
   Future<void> _createMarkerImageFromAsset(BuildContext context) async {
     if (_markerIcon == null) {
       final ImageConfiguration imageConfiguration =
-      createLocalImageConfiguration(context, size: Size.square(48));
-      BitmapDescriptor.fromAssetImage(
-          imageConfiguration, 'assets/office.png')
+          createLocalImageConfiguration(context, size: Size.square(48));
+      BitmapDescriptor.fromAssetImage(imageConfiguration, 'assets/office.png')
           .then(_updateBitmap);
     }
   }
+
   void _updateBitmap(BitmapDescriptor bitmap) {
     setState(() {
       _markerIcon = bitmap;
@@ -158,7 +159,6 @@ class _MapsState extends State<Maps> {
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
-
         backgroundColor: Colors.green,
         textColor: Colors.white,
         fontSize: 16.0);
@@ -182,12 +182,14 @@ class _MapsState extends State<Maps> {
       mapType: MapType.normal,
       markers: _createMarker(),
       initialCameraPosition: CameraPosition(
-          target: LatLng(widget.latitude, widget.longitude), zoom: 20.0),
+          target: LatLng(double.parse(widget.latitude.toString()),
+              double.parse(widget.longitude.toString())),
+          zoom: 20.0),
       onMapCreated: (GoogleMapController controller) {
         _controller = controller;
         // _setStyle(controller);
 
-       // _setStyle(controller);
+        // _setStyle(controller);
       },
       tiltGesturesEnabled: false,
       onTap: (LatLng location) {
@@ -205,54 +207,45 @@ class _MapsState extends State<Maps> {
     _createMarkerImageFromAsset(context);
     return Scaffold(
         body: Stack(
-          children: <Widget>[
-            _child,
-            AnimatedPositioned(
-              bottom: _pinPillPosition,
-              right: 0,
-              left: 0,
-              duration: Duration(milliseconds: 200),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  margin: EdgeInsets.all(20),
-                  height: 70,
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.all(Radius.circular(50)),
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          blurRadius: 20,
-                          offset: Offset.zero,
-                          color: Colors.grey.withOpacity(0.5),
-                        )
-                      ]),
-                ),
-              ),
+      children: <Widget>[
+        _mapWidget(),
+        AnimatedPositioned(
+          bottom: _pinPillPosition,
+          right: 0,
+          left: 0,
+          duration: Duration(milliseconds: 200),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              margin: EdgeInsets.all(20),
+              height: 70,
+              decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.all(Radius.circular(50)),
+                  boxShadow: <BoxShadow>[
+                    BoxShadow(
+                      blurRadius: 20,
+                      offset: Offset.zero,
+                      color: Colors.grey.withOpacity(0.5),
+                    )
+                  ]),
             ),
-            new Positioned(
-                top: MediaQuery
-                    .of(context)
-                    .size
-                    .height * 0.6,
-                child: new Container(
-                    width: MediaQuery
-                        .of(context)
-                        .size
-                        .width,
-                    height: MediaQuery
-                        .of(context)
-                        .size
-                        .height / 2,
-                    decoration: new BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: new BorderRadius.only(
-                          topLeft: const Radius.circular(40.0),
-                          topRight: const Radius.circular(40.0),
-                        )),
-                    child: _info()))
-          ],
-        ));
+          ),
+        ),
+        new Positioned(
+            top: MediaQuery.of(context).size.height * 0.6,
+            child: new Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height / 2,
+                decoration: new BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: new BorderRadius.only(
+                      topLeft: const Radius.circular(40.0),
+                      topRight: const Radius.circular(40.0),
+                    )),
+                child: _info()))
+      ],
+    ));
   }
 
   Widget _info() {
@@ -260,19 +253,18 @@ class _MapsState extends State<Maps> {
       child: Container(
         child: Column(
           children: <Widget>[
-
             ///widget profile
             Container(
               child: Row(
                 children: <Widget>[
                   Container(
-                    margin: EdgeInsets.only(top: 20, left: 20, right: 20),
-                    child: CircleAvatar(
-                      radius: 30.0,
-                      backgroundImage:
-                      NetworkImage("${image_ur}/${widget.profile_background}"),
-                      backgroundColor: Colors.transparent,
-                    )),
+                      margin: EdgeInsets.only(top: 20, left: 20, right: 20),
+                      child: CircleAvatar(
+                        radius: 30.0,
+                        backgroundImage: NetworkImage(
+                            "${image_ur}/${widget.profile_background}"),
+                        backgroundColor: Colors.transparent,
+                      )),
                   Container(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,14 +322,14 @@ class _MapsState extends State<Maps> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: <Widget>[
-                                Text("Alamat", ),
+                                Text("Alamat"),
                                 SizedBox(
                                   height: 10,
                                 ),
                                 if (widget.address != null &&
                                     widget.address != null)
                                   Container(
-                                    width: Get.mediaQuery.size.width/2 +40,
+                                    width: Get.mediaQuery.size.width / 2 + 40,
                                     child: Text(
                                       widget.address,
                                       style: TextStyle(color: Colors.black38),
@@ -359,8 +351,8 @@ class _MapsState extends State<Maps> {
               child: Row(
                 children: <Widget>[
                   Container(
-                    margin: EdgeInsets.only(
-                        left: 10, right: 20, top: 5, bottom: 5),
+                    margin:
+                        EdgeInsets.only(left: 10, right: 20, top: 5, bottom: 5),
                     child: Icon(
                       Icons.info,
                       color: Colors.black45,
@@ -369,13 +361,11 @@ class _MapsState extends State<Maps> {
                   Container(
                       child: widget.distance > 20
                           ? Text(
-                        "Anda berada di luar area kantor",
-                        
-                      )
+                              "Anda berada di luar area kantor",
+                            )
                           : Text(
-                        "Anda berada di dalam area kantor",
-                    
-                      ))
+                              "Anda berada di dalam area kantor",
+                            ))
                 ],
               ),
             )
@@ -386,11 +376,13 @@ class _MapsState extends State<Maps> {
       ),
     );
   }
+
   void _setCircles() {
     _circles.add(
       Circle(
           circleId: CircleId("0"),
-          center: LatLng(double.parse(widget.latmainoffice), double.parse(widget.longMainoffice)),
+          center: LatLng(double.parse(widget.latmainoffice.toString()),
+              double.parse(widget.longMainoffice.toString())),
           radius: 10,
           strokeColor: baseColor1,
           fillColor: baseColor.withOpacity(0.25),
@@ -401,9 +393,7 @@ class _MapsState extends State<Maps> {
   void getDatapref() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     setState(() {
-
       employee_id = sharedPreferences.getString("employee_id");
-
     });
   }
 
@@ -415,6 +405,5 @@ class _MapsState extends State<Maps> {
     // _setSourceIcon();
     super.initState();
     _setCircles();
-
   }
 }

@@ -9,9 +9,11 @@ import 'package:flutter/services.dart';
 import 'package:format_indonesia/format_indonesia.dart';
 import 'package:geocode/geocode.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:magentahrd/pages/employee/attendances/map.dart';
 
 import 'package:magentahrd/services/api_clien.dart';
 import 'package:magentahrd/utalities/fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 // import 'package:mapbox_gl/mapbox_gl.dart';
 
 class AttendancesDetailPage extends StatefulWidget {
@@ -131,12 +133,12 @@ class _AttendancesDetailPageState extends State<AttendancesDetailPage> {
                 SizedBox(
                   height: 10,
                 ),
-                Container(
-                    child: widget.status == "pending"
-                        ? Text("")
-                        : widget.status == "rejected"
-                            ? _buildrejected()
-                            : _buildapproved()),
+                // Container(
+                //     child: widget.status == "pending"
+                //         ? Text("")
+                //         : widget.status == "rejected"
+                //             ? _buildrejected()
+                //             : _buildapproved()),
                 //_buildrejected(),
               ],
             ),
@@ -521,20 +523,21 @@ class _AttendancesDetailPageState extends State<AttendancesDetailPage> {
   Widget _builmap() {
     return InkWell(
       onTap: () {
-        // Navigator.push(
-        //     context,
-        //     MaterialPageRoute(
-        //         builder: (context) => MapsDetail(
-        //           latitude: widget.latitude,
-        //           longitude: widget.longitude,
-        //           departement_name: widget.work_placement,
-        //           address: _currentAddress,
-        //           profile_background: "",
-        //           firts_name: widget.firts_name_employee,
-        //           last_name: widget.last_name_employee,
-        //           office_latitude: widget.office_latitude,
-        //           office_longitude: widget.office_longitude,
-        //         )));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Maps(
+                      latitude: widget.latitude,
+                      longitude: widget.longitude,
+                      departement_name: widget.work_placement,
+                      address: _currentAddress,
+                      profile_background: "",
+                      firts_name: widget.firts_name_employee,
+                      last_name: widget.last_name_employee,
+                      latmainoffice: widget.office_latitude,
+                      longMainoffice: widget.office_longitude,
+                      distance: 20,
+                    )));
       },
       child: InkWell(
         onTap: () {
@@ -547,42 +550,41 @@ class _AttendancesDetailPageState extends State<AttendancesDetailPage> {
               height: 300.0,
               child: Stack(
                 children: [
-                  //   MapboxMap(
-                  //   accessToken:
-                  //   "pk.eyJ1Ijoia2l0dG9rYXR0byIsImEiOiJja2t5eTducm4wYmhwMnFwNXI4ejA4cGhuIn0.xoSKS41bJtuetZ8v5p_aiQ",
-                  //   onMapCreated: _onMapCreated,
-                  //   onStyleLoadedCallback: () {
-
-                  //     mapController!.addSymbol(SymbolOptions(
-                  //         geometry: LatLng(
-                  //             double.parse(widget.latitude), double.parse(widget.longitude)),
-                  //         textField: "",
-                  //         iconImage: "assetImageEmployee",
-                  //         iconSize: 0.5,
-                  //         textOffset: Offset(0, 2)));
-                  //   },
-                  //   initialCameraPosition: CameraPosition(
-                  //       target: LatLng(
-                  //           double.parse(widget.latitude), double.parse(widget.longitude)),
-                  //       zoom: 15),
-                  // ),
+                  GoogleMap(
+                      initialCameraPosition: CameraPosition(
+                          target: LatLng(double.parse(widget.latitude),
+                              double.parse(widget.longitude)),
+                          zoom: 11.0),
+                      markers: Set<Marker>.of(<Marker>[
+                        Marker(
+                          markerId: MarkerId("1"),
+                          position: LatLng(double.parse(widget.latitude),
+                              double.parse(widget.longitude)),
+                        ),
+                      ]),
+                      gestureRecognizers:
+                          <Factory<OneSequenceGestureRecognizer>>[
+                        Factory<OneSequenceGestureRecognizer>(
+                          () => ScaleGestureRecognizer(),
+                        ),
+                      ].toSet()),
                   InkWell(
                     onTap: () {
-                      // print(_currentAddress);
-                      // Navigator.push(
-                      //     context,
-                      //     MaterialPageRoute(
-                      //         builder: (context) => MapsDetail(
-                      //           latitude: widget.latitude,
-                      //           longitude: widget.longitude,
-                      //           departement_name: widget.work_placement,
-                      //           address: _currentAddress,
-                      //           profile_background: "",
-                      //           firts_name: widget.firts_name_employee,
-                      //           last_name: widget.last_name_employee,
-                      //           office_latitude: widget.office_latitude,
-                      //           office_longitude: widget.office_longitude,
-                      //         )));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Maps(
+                                    latitude: widget.latitude,
+                                    longitude: widget.longitude,
+                                    departement_name: widget.work_placement,
+                                    address: _currentAddress,
+                                    profile_background: "",
+                                    firts_name: widget.firts_name_employee,
+                                    last_name: widget.last_name_employee,
+                                    latmainoffice: widget.office_latitude,
+                                    longMainoffice: widget.office_longitude,
+                                    distance: 20,
+                                  )));
                     },
                     child: Container(
                       width: 300,
@@ -622,7 +624,7 @@ class _AttendancesDetailPageState extends State<AttendancesDetailPage> {
                       fit: BoxFit.fill,
                     )
                   : CachedNetworkImage(
-                      imageUrl: "${image_ur}/${widget.image}",
+                      imageUrl: "${widget.image}",
                       fit: BoxFit.fill,
                       placeholder: (context, url) =>
                           Center(child: new CircularProgressIndicator()),

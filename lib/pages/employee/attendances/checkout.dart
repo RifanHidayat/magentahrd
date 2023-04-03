@@ -24,6 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:toast/toast.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geocode/geocode.dart';
 
 class CheckoutPage extends StatefulWidget {
@@ -38,10 +39,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
   bool _isLoading = true;
   bool _loading_image = true;
   bool _disposed = false;
+  var distance = 20;
 
   Uint8List webImage = Uint8List(10);
   File _file = File("0");
- final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;
+  final Geolocator geolocator = Geolocator();
   // final Geolocator geolocator = Geolocator();
   Position? _currentPosition;
   String? _currentAddress;
@@ -68,6 +70,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Validasi validator = new Validasi();
   double _distance = 0.0;
   bool _is_long_shift = false;
+  Timer? _timer;
 
   ///main context
   @override
@@ -95,22 +98,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   child: Column(
                     children: <Widget>[
                       Container(
-                        child:
-                            _distance > 20 ? _builddistaceCompany() : Text(""),
+                        child: _distance > distance
+                            ? _builddistaceCompany()
+                            : Text(""),
                       ),
                       Container(
                         margin: EdgeInsets.only(top: 15),
-                        child: _file.path == "0"
+                        child: _image == null
                             ? _buildPhoto(context)
                             : InkWell(
                                 onTap: () {
                                   aksesCamera();
-                                  //_onAddPhotoClicked(context);
                                 },
-                                child: Container(
-                                    width: 200,
-                                    height: 200,
-                                    child: Image.memory(webImage))),
+                                child: new Image.file(_image!,
+                                    width: 200, height: 200, fit: BoxFit.fill),
+                              ),
+                        // child: _file.path == "0"
+                        //     ? _buildPhoto(context)
+                        //     : InkWell(
+                        //         onTap: () {
+                        //           // print("tees");
+                        //           // aksesCamera();
+                        //           //_onAddPhotoClicked(context);
+                        //         },
+                        //         child: Container(
+                        //             width: 200,
+                        //             height: 200,
+                        //             child: Image.memory(webImage))),
                       ),
                       _buildText(),
                       SizedBox(
@@ -275,18 +289,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void _startJam() {
-    Timer.periodic(new Duration(seconds: 1), (_) {
-      var tgl = new DateTime.now();
-      var formatedjam = new DateFormat.Hms().format(tgl);
-      if (!_disposed) {
-        setState(() {
-          time = formatedjam;
-          _getCurrentLocation();
-          _getDistance(
-              _lat_mainoffice, _long_mainoffice, _latitude, _longitude);
-        });
-      }
+    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      _getCurrentLocation();
+      _getDistance(_lat_mainoffice, _long_mainoffice, _latitude, _longitude);
     });
+  }
+
+  void requestPermission() async {
+    LocationPermission permission;
+    permission = await Geolocator.requestPermission();
   }
 
   Widget _buildtime() {
@@ -502,55 +513,62 @@ class _CheckoutPageState extends State<CheckoutPage> {
             _category_absent.toString().toLowerCase());
       }
     } else {
-      validation_checkout(
-          context,
-          base64.toString(),
-          Cremark.text,
-          _latitude.toString().trim(),
-          _longitude.toString().trim(),
-          _employee_id,
-          date,
-          time,
-          _departement_name,
-          _distance,
-          _lat_mainoffice,
-          _long_mainoffice,
-          _long_shift_working_pattern_id,
-          _is_long_shift,
-          _category_absent.toString().toLowerCase());
+      if (_distance > distance) {
+        if (_image == null || _image == "" || _image == "null") {
+          Toast.show("Ambil fotomu terlebih dahulu", context,
+              duration: 5, gravity: Toast.BOTTOM);
+        } else {
+          validation_checkout(
+              context,
+              base64.toString(),
+              Cremark.text,
+              _latitude.toString().trim(),
+              _longitude.toString().trim(),
+              _employee_id,
+              date,
+              time,
+              _departement_name,
+              _distance,
+              _lat_mainoffice,
+              _long_mainoffice,
+              _long_shift_working_pattern_id,
+              _is_long_shift,
+              _category_absent.toString().toLowerCase());
+        }
+      } else {
+        validation_checkout(
+            context,
+            base64.toString(),
+            Cremark.text,
+            _latitude.toString().trim(),
+            _longitude.toString().trim(),
+            _employee_id,
+            date,
+            time,
+            _departement_name,
+            _distance,
+            _lat_mainoffice,
+            _long_mainoffice,
+            _long_shift_working_pattern_id,
+            _is_long_shift,
+            _category_absent.toString().toLowerCase());
+      }
     }
   }
 
- 
-
   aksesCamera() async {
-    if (kIsWeb) {
-      final ImagePicker _picker = ImagePicker();
-      XFile? image = await _picker.pickImage(source: ImageSource.camera);
-      if (image != null) {
-        var f = await image.readAsBytes();
-        setState(() {
-          _file = File("a");
-          base64 = base64Encode(f);
-          webImage = f;
-        });
-      } else {
-        toast_success("No file selected");
-      }
+    final ImagePicker _picker = ImagePicker();
+    var image = await _picker.pickImage(source: ImageSource.camera);
+
+    if (image != null) {
+      var f = await image.readAsBytes();
+      setState(() {
+        _image = File(image.path);
+        base64 = base64Encode(f);
+      });
     } else {
-      toast_error("Permission not granted");
+      toast_success("No file selected");
     }
-    // final checkinImage =
-    //     await ImagePicker().pickImage(source: ImageSource.camera);
-    // if (checkinImage != null) {
-    //   setState(() {
-    //     _imagePath = checkinImage.path.toString();
-    //     print("data phoho${checkinImage.path.toString()}");
-    //     //_photos = checkinImage;
-    //     // final bytes = File(checkinImage.path).readAsBytesSync();
-    //     // base64 = base64Encode(bytes);
-    //   });
-    // }
   }
 
   Widget _builddistaceCompany() {
@@ -578,11 +596,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   //get curret locatin lat dan long
   _getCurrentLocation() {
-    geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
         .then((Position position) {
       setState(() {
         _currentPosition = position;
+
         _latitude = _currentPosition!.latitude.toString();
         _longitude = _currentPosition!.longitude.toString();
       });
@@ -596,12 +614,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
   //convert lat dan long to address
   _getAddressFromLatLng() async {
     try {
-      Address address = await geoCode.reverseGeocoding(
-          latitude: double.parse(_latitude.toString()),
-          longitude: double.parse(_longitude.toString()));
+      List<Placemark> p = await placemarkFromCoordinates(
+          _currentPosition!.latitude, _currentPosition!.longitude);
+
+      Placemark place = p[0];
+
       setState(() {
         _currentAddress =
-            "${address.streetAddress} ${address.region} ${address.city} ";
+            "${place.locality}, ${place.postalCode}, ${place.country}";
       });
     } catch (e) {
       print(e);
@@ -618,14 +638,32 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   /**/
+  // _getDistance(latMainoffice, longMainoffice, currentlat, currentlong) async {
+  //   try {
+  //     _distance = 0;
+  //     final double d = await Geolocator().distanceBetween(
+  //         double.parse(latMainoffice),
+  //         double.parse(longMainoffice),
+  //         currentlat,
+  //         currentlong);
+  //     setState(() {
+  //       _distance = d;
+  //       print("$d");
+  //       // print(d);
+  //     });
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
   _getDistance(latMainoffice, longMainoffice, currentlat, currentlong) async {
     try {
       _distance = 0;
-      final double d = await Geolocator().distanceBetween(
-          double.parse(latMainoffice),
-          double.parse(longMainoffice),
-          currentlat,
-          currentlong);
+      final double d = await Geolocator.distanceBetween(
+        double.parse(latMainoffice),
+        double.parse(longMainoffice),
+        double.parse(currentlat),
+        double.parse(currentlong),
+      );
       setState(() {
         _distance = d;
         print("$d");
@@ -638,16 +676,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   void dispose() {
-    if (!mounted) return;
-    setState(() {
-      _disposed = true;
-    });
+    _timer!.cancel();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    requestPermission();
     // Timer.periodic(new Duration(seconds: 1), (_) {});
 
     _startJam();

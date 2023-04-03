@@ -13,6 +13,8 @@ class CheckinController extends GetxController {
   var isLoading = true.obs;
   var checkins = <CheckinModel>[].obs;
 
+  var checkinsToday = <CheckinModel>[].obs;
+  var isLoadingList = true.obs;
   // Future<void> save(
   //     {required employeeId, latitude, longitude, address, image}) async {
   //   AlertApp().loadingIndicator();
@@ -57,7 +59,7 @@ class CheckinController extends GetxController {
       'Content-type': 'application/json',
       'Accept': 'application/json',
     };
-
+    print(body);
     // var request = await Request(url: "/api/inspections", body: body)
     //     .postMultipart(image: image);
     // var respone = jsonDecode(request.body);
@@ -109,6 +111,31 @@ class CheckinController extends GetxController {
       Get.back();
       AlertApp().message(respone['message']);
       print(respone['message']);
+    }
+  }
+
+  Future<void> fetchCheckinToday() async {
+    try {
+      isLoadingList.value = true;
+      final response = await http.get(Uri.parse('$base_url/api/inspections'));
+      final resp = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        checkinsToday.value = CheckinModel.fromJsonToList(resp['data']);
+        isLoadingList.value = false;
+        checkinsToday.value = checkinsToday.where((element) {
+          return DateFormat('yyyy-MM-dd')
+                  .format(DateTime.parse(element.dateTime.toString())) ==
+              DateFormat('yyyy-MM-dd')
+                  .format(DateTime.parse(DateTime.now().toString()));
+        }).toList();
+      } else {
+        isLoadingList.value = false;
+        checkins.value = [];
+      }
+    } catch (e) {
+      checkins.value = [];
+      isLoadingList.value = false;
+      print(e);
     }
   }
 

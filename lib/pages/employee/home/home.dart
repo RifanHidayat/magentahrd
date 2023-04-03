@@ -25,6 +25,7 @@ import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:geolocator/geolocator.dart';
 
 class HomeEmployee extends StatefulWidget {
   @override
@@ -208,6 +209,7 @@ class _HomeEmployeeState extends State<HomeEmployee> {
           onTap: () {
             // Navigator.pushNamed(context, "leave_list_employee-page");
             Get.to(TrackPage());
+            requestPermission();
           },
           child: Card(
             color: HexColor('#FFECD5'),
@@ -220,8 +222,13 @@ class _HomeEmployeeState extends State<HomeEmployee> {
           ),
         ),
       ),
-      Text("Aktifiatas", style: subtitleMainMenu)
+      Text("Aktifitas", style: subtitleMainMenu)
     ]);
+  }
+
+  void requestPermission() async {
+    LocationPermission permission;
+    permission = await Geolocator.requestPermission();
   }
 
   Widget _buildMenusick() {
@@ -1146,5 +1153,6 @@ class _HomeEmployeeState extends State<HomeEmployee> {
   //inialisasi state
   void initState() {
     getDatapref();
+    requestPermission();
   }
 }

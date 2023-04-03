@@ -25,12 +25,12 @@ import 'package:magentahrd/utalities/color.dart';
 import 'package:magentahrd/utalities/fonts.dart';
 import 'package:magentahrd/vaidasi/validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geocoding/geocoding.dart';
 
 import 'package:path/path.dart' as Path;
 
 import 'package:http/http.dart' as http;
 import 'package:toast/toast.dart';
-
 
 import 'dart:async';
 import 'dart:io';
@@ -39,7 +39,6 @@ import 'dart:ui';
 import 'package:device_info_plus/device_info_plus.dart';
 
 import 'package:flutter_background_service/flutter_background_service.dart';
-
 
 class CheckinPage extends StatefulWidget {
   @override
@@ -58,6 +57,8 @@ class _CheckinPageState extends State<CheckinPage> {
   File _file = File("0");
 
   Image? _photos;
+
+  var distaance = 20;
 
   // Location location = new Location();
   // LocationData? _locationData;
@@ -87,6 +88,7 @@ class _CheckinPageState extends State<CheckinPage> {
   String? base64;
   Validasi validator = new Validasi();
   double _distance = 0.0;
+  Timer? _timer;
 
   ///main context
   @override
@@ -97,15 +99,11 @@ class _CheckinPageState extends State<CheckinPage> {
           color: Colors.black87, //modify arrow color from here..
         ),
         backgroundColor: Colors.white,
-
-
         title: new Text(
           "Checkin",
           style: TextStyle(color: Colors.black87),
         ),
       ),
-
-
       body: _isLoading == true
           ? Center(
               child: CircularProgressIndicator(),
@@ -118,22 +116,33 @@ class _CheckinPageState extends State<CheckinPage> {
                   child: Column(
                     children: <Widget>[
                       Container(
-                        child:
-                            _distance > 20 ? _builddistaceCompany() : Text(""),
+                        child: _distance > distaance
+                            ? _builddistaceCompany()
+                            : Text(""),
                       ),
                       Container(
                         margin: EdgeInsets.only(top: 15),
-                        child: _file.path == "0"
+                        child: _image == null
                             ? _buildPhoto(context)
                             : InkWell(
                                 onTap: () {
                                   aksesCamera();
-                                  //_onAddPhotoClicked(context);
                                 },
-                                child: Container(
-                                    width: 200,
-                                    height: 200,
-                                    child: Image.memory(webImage))),
+                                child: new Image.file(_image!,
+                                    width: 200, height: 200, fit: BoxFit.fill),
+                              ),
+                        // child: _file.path == "0"
+                        //     ? _buildPhoto(context)
+                        //     : InkWell(
+                        //         onTap: () {
+                        //           // print("tees");
+                        //           // aksesCamera();
+                        //           //_onAddPhotoClicked(context);
+                        //         },
+                        //         child: Container(
+                        //             width: 200,
+                        //             height: 200,
+                        //             child: Image.memory(webImage))),
                       ),
                       _buildText(),
                       SizedBox(
@@ -230,14 +239,14 @@ class _CheckinPageState extends State<CheckinPage> {
               child: FittedBox(
                 child: FloatingActionButton(
                   onPressed: () async {
-                    // upload();
-                                    final service = FlutterBackgroundService();
-                var isRunning = await service.isRunning();
-                if (isRunning) {
-                  service.invoke("stopService");
-                } else {
-                  service.startService();
-                }
+                    // final service = FlutterBackgroundService();
+                    // var isRunning = await service.isRunning();
+                    // if (isRunning) {
+                    //   service.invoke("stopService");
+                    // } else {
+                    //   service.startService();
+                    // }
+                    upload();
                   },
                   backgroundColor: btnColor1,
                   child: Container(
@@ -325,18 +334,9 @@ class _CheckinPageState extends State<CheckinPage> {
   }
 
   void _startJam() {
-    Timer.periodic(new Duration(seconds: 1), (_) {
-      var tgl = new DateTime.now();
-      var formatedjam = new DateFormat.Hms().format(tgl);
-      if (!_disposed) {
-        setState(() {
-          time = formatedjam;
-          _getCurrentLocation();
-
-          _getDistance(
-              _lat_mainoffice, _long_mainoffice, _latitude, _longitude);
-        });
-      }
+    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+      _getCurrentLocation();
+      _getDistance(_lat_mainoffice, _long_mainoffice, _latitude, _longitude);
     });
   }
 
@@ -453,8 +453,8 @@ class _CheckinPageState extends State<CheckinPage> {
                         MaterialPageRoute(
                             builder: (context) => Maps(
                                   address: _currentAddress,
-                                  longitude: _longitude,
-                                  latitude: _latitude,
+                                  longitude: _longitude.toString(),
+                                  latitude: _latitude.toString(),
                                   firts_name: _firts_name,
                                   last_name: _last_name,
                                   profile_background: _profile_background,
@@ -554,6 +554,51 @@ class _CheckinPageState extends State<CheckinPage> {
         }
       } else {
         Toast.show("$_category_absent", context);
+        if (_distance > distaance) {
+          Toast.show("Ambil fotomu terlebih dahulu", context,
+              duration: 5, gravity: Toast.BOTTOM);
+        } else {
+          validation_checkin(
+              context,
+              base64.toString(),
+              Cremark.text,
+              _latitude.toString(),
+              _longitude.toString(),
+              _employee_id,
+              date,
+              time,
+              _departement_name,
+              _distance,
+              _lat_mainoffice,
+              _long_mainoffice,
+              // _active_working_pattern_id,
+              activeWorkingPatternId,
+              "present");
+        }
+      }
+    } else {
+      if (_distance > distaance) {
+        if (_image == null || _image == "" || _image == "null") {
+          Toast.show("Ambil fotomu terlebih dahulu", context,
+              duration: 5, gravity: Toast.BOTTOM);
+        } else {
+          validation_checkin(
+              context,
+              base64.toString(),
+              Cremark.text,
+              _latitude.toString(),
+              _longitude.toString(),
+              _employee_id,
+              date,
+              time,
+              _departement_name,
+              _distance,
+              _lat_mainoffice,
+              _long_mainoffice,
+              activeWorkingPatternId,
+              _category_absent.toString().toLowerCase());
+        }
+      } else {
         validation_checkin(
             context,
             base64.toString(),
@@ -567,60 +612,58 @@ class _CheckinPageState extends State<CheckinPage> {
             _distance,
             _lat_mainoffice,
             _long_mainoffice,
-            // _active_working_pattern_id,
             activeWorkingPatternId,
-            "present");
+            _category_absent.toString().toLowerCase());
       }
+    }
+  }
+
+  aksesCamera() async {
+    final ImagePicker _picker = ImagePicker();
+    var image = await _picker.pickImage(source: ImageSource.camera);
+
+    if (image != null) {
+      var f = await image.readAsBytes();
+      setState(() {
+        _image = File(image.path);
+        base64 = base64Encode(f);
+      });
     } else {
-      validation_checkin(
-          context,
-          base64.toString(),
-          Cremark.text,
-          _latitude.toString(),
-          _longitude.toString(),
-          _employee_id,
-          date,
-          time,
-          _departement_name,
-          _distance,
-          _lat_mainoffice,
-          _long_mainoffice,
-          activeWorkingPatternId,
-          _category_absent.toString().toLowerCase());
+      toast_success("No file selected");
     }
   }
 
   ///fucntion
   //akses kamera
-  aksesCamera() async {
-    if (kIsWeb) {
-      final ImagePicker _picker = ImagePicker();
-      XFile? image = await _picker.pickImage(source: ImageSource.camera);
-      if (image != null) {
-        var f = await image.readAsBytes();
-        setState(() {
-          _file = File("a");
-          base64 = base64Encode(f);
-          webImage = f;
-        });
-      } else {
-        toast_success("No file selected");
-      }
-    } else {
-      toast_error("Permission not granted");
-    }
-    // final checkinImage =
-    //     await ImagePicker().pickImage(source: ImageSource.camera);
-    // if (checkinImage != null) {
-    //   setState(() {
-    //     _imagePath = checkinImage.path.toString();
-    //     print("data phoho${checkinImage.path.toString()}");
-    //     //_photos = checkinImage;
-    //     // final bytes = File(checkinImage.path).readAsBytesSync();
-    //     // base64 = base64Encode(bytes);
-    //   });
-    // }
-  }
+  // aksesCamera() async {
+  //   if (kIsWeb) {
+  //     final ImagePicker _picker = ImagePicker();
+  //     XFile? image = await _picker.pickImage(source: ImageSource.camera);
+  //     if (image != null) {
+  //       var f = await image.readAsBytes();
+  //       setState(() {
+  //         _file = File("a");
+  //         base64 = base64Encode(f);
+  //         webImage = f;
+  //       });
+  //     } else {
+  //       toast_success("No file selected");
+  //     }
+  //   } else {
+  //     toast_error("Permission not granted");
+  //   }
+  //   // final checkinImage =
+  //   //     await ImagePicker().pickImage(source: ImageSource.camera);
+  //   // if (checkinImage != null) {
+  //   //   setState(() {
+  //   //     _imagePath = checkinImage.path.toString();
+  //   //     print("data phoho${checkinImage.path.toString()}");
+  //   //     //_photos = checkinImage;
+  //   //     // final bytes = File(checkinImage.path).readAsBytesSync();
+  //   //     // base64 = base64Encode(bytes);
+  //   //   });
+  //   // }
+  // }
 
   // Future<void> ccontext) async {
   //   final image = await ImagePickerWeb.getImageAsWidget();
@@ -660,16 +703,21 @@ class _CheckinPageState extends State<CheckinPage> {
     );
   }
 
+  void requestPermission() async {
+    LocationPermission permission;
+    permission = await Geolocator.requestPermission();
+  }
+
   //get curret locatin lat dan long
   _getCurrentLocation() {
-    geolocator
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
+    Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best)
         .then((Position position) {
       setState(() {
         _currentPosition = position;
-
         _latitude = _currentPosition!.latitude.toString();
         _longitude = _currentPosition!.longitude.toString();
+        print(_latitude.toString());
+        print(_longitude.toString());
       });
 
       _getAddressFromLatLng();
@@ -681,7 +729,7 @@ class _CheckinPageState extends State<CheckinPage> {
   //convert lat dan long to address
   _getAddressFromLatLng() async {
     try {
-      List<Placemark> p = await geolocator.placemarkFromCoordinates(
+      List<Placemark> p = await placemarkFromCoordinates(
           _currentPosition!.latitude, _currentPosition!.longitude);
 
       Placemark place = p[0];
@@ -709,7 +757,7 @@ class _CheckinPageState extends State<CheckinPage> {
   _getDistance(latMainoffice, longMainoffice, currentlat, currentlong) async {
     try {
       _distance = 0;
-      final double d = await Geolocator().distanceBetween(
+      final double d = await Geolocator.distanceBetween(
         double.parse(latMainoffice),
         double.parse(longMainoffice),
         double.parse(currentlat),
@@ -728,16 +776,19 @@ class _CheckinPageState extends State<CheckinPage> {
   @override
   void dispose() {
     _disposed = true;
-    
+    _timer!.cancel();
+
     super.dispose();
   }
 
   @override
   void initState() {
-    super.initState();
+    requestPermission();
+
     _getCurrentLocation();
     _startJam();
     _getDataPref();
+    super.initState();
   }
 
   Future dataEmployee(var id) async {
