@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 
 import 'package:photo_view/photo_view.dart';
 
-
 class PhotoPage extends StatefulWidget {
   PhotoPage({this.image});
 
@@ -34,7 +33,7 @@ class _PhotoPageState extends State<PhotoPage> {
                         ))
                       : PhotoView(
                           imageProvider: NetworkImage(
-                          "/${widget.image}",
+                          "${widget.image}",
                         ))),
             ),
           ),

@@ -294,17 +294,17 @@ class _DashboardpageState extends State<Dashboardpage> {
                                           return doc['photo'] != null
                                               ? InkWell(
                                                   onTap: () {
-                                                    Navigator.push(
-                                                        context,
-                                                        PageTransition(
-                                                            type:
-                                                                PageTransitionType
-                                                                    .rightToLeft,
-                                                            child:
-                                                                AccountDetailPage(
-                                                              employeeId: doc[
-                                                                  'employee_id'],
-                                                            )));
+                                                    // Navigator.push(
+                                                    //     context,
+                                                    //     PageTransition(
+                                                    //         type:
+                                                    //             PageTransitionType
+                                                    //                 .rightToLeft,
+                                                    //         child:
+                                                    //             AccountDetailPage(
+                                                    //           employeeId: doc[
+                                                    //               'employee_id'],
+                                                    //         )));
                                                   },
                                                   child: Container(
                                                       margin: EdgeInsets.only(

@@ -135,7 +135,7 @@ class _CheckinHistoryPageState extends State<CheckinHistoryPage> {
                                                     topLeft:
                                                         Radius.circular(5)),
                                                 child: Image.network(
-                                                  "/${data.image}",
+                                                  "${data.image}",
                                                   fit: BoxFit.fill,
                                                   width: 100,
                                                   height: 100,

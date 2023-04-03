@@ -106,7 +106,7 @@ class _DetailProfileState extends State<DetailProfile> {
         children: <Widget>[
           Container(
               child: CircleAvatar(
-            backgroundImage: NetworkImage("$image_ur/$photo"),
+            backgroundImage: NetworkImage("$photo"),
             backgroundColor: Colors.transparent,
             radius: 40,
           )),
@@ -2399,9 +2399,11 @@ class _DetailProfileState extends State<DetailProfile> {
     setState(() {
       _isLoading = true;
     });
+
     final response =
         await http.get(Uri.parse("$base_url/api/employees/${widget.id}"));
     final data = jsonDecode(response.body);
+    print("$base_url/api/employees/${widget.id}");
 
     if (data['code'] == 200) {
       //final compaymodel = companiesFromJson(response.body);

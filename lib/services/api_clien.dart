@@ -263,12 +263,12 @@ class Services {
       final data = jsonDecode(response.body);
       if (data['code'] == 200) {
         print(" USeer id ${data['data']}");
-        // await box.write(
-        //     'status', data['data']['employee']['is_tracked'].toString());
-        await box.write('status', "1".toString());
-        // await box.write(
-        //     'access_type', data['data']['mobile_access_type'].toString());
-        await box.write('access_type', "supervisor".toString());
+        await box.write(
+            'status', data['data']['employee']['is_tracked'].toString());
+        // await box.write('status', "1".toString());
+        await box.write(
+            'access_type', data['data']['mobile_access_type'].toString());
+        // await box.write('access_type', "supervisor".toString());
 
         print(
             "Suprvisor accss ${data['data']['supervisor_access_type'].toString()}");
@@ -520,19 +520,20 @@ class Services {
     });
 
     final responseJson = jsonDecode(response.body);
-    if (responseJson['code'] == 200) {
-      if (GetStorage().read("status") == "1") {
-        await initializeService();
-        final service = FlutterBackgroundService();
+    print(responseJson);
+    if (GetStorage().read("status") == "1") {
+      await initializeService();
+      final service = FlutterBackgroundService();
 
-        var isRunning = await service.isRunning();
-        if (isRunning) {
-          //   service.invoke("stopService");
-        } else {
-          service.startService();
-        }
+      var isRunning = await service.isRunning();
+      if (isRunning) {
+        //   service.invoke("stopService");
+      } else {
+        service.startService();
       }
+    }
 
+    if (responseJson['code'] == 200) {
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
       Navigator.pop(context);
@@ -563,7 +564,7 @@ class Services {
       // long_shift_working_pattern_id,
       category) async {
     loading(context);
-    final service = FlutterBackgroundService();
+
     // var isRunning = await service.isRunning();
     // if (isRunning) {
     //   service.invoke("stopService");
@@ -587,16 +588,16 @@ class Services {
       // "is_long_shift": is_long_shift.toString(),
       "screen": "DetailAttendanceAdmin"
     });
+    final service = FlutterBackgroundService();
+    var isRunning = await service.isRunning();
+    if (isRunning) {
+      service.invoke("stopService");
+    } else {
+      // service.startService();
+    }
 
     final responseJson = jsonDecode(response.body);
     if (responseJson['code'] == 200) {
-      final service = FlutterBackgroundService();
-      var isRunning = await service.isRunning();
-      if (isRunning) {
-        service.invoke("stopService");
-      } else {
-        // service.startService();
-      }
       SharedPreferences sharedPreferences =
           await SharedPreferences.getInstance();
       Navigator.pop(context);

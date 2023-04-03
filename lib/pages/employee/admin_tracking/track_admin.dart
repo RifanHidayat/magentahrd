@@ -379,7 +379,7 @@ class _TrackingAdminState extends State<TrackingAdmin> {
                       element['photo'] == 'null'
                   ? BitmapDescriptor.fromBytes(markerIcon)
                   : BitmapDescriptor.fromBytes(dataBytes.buffer.asUint8List(),
-                      size: Size.fromRadius(100)),
+                      size: Size(4, 4)),
 
               position: LatLng(
                 double.parse(element['latitude'].toString()),

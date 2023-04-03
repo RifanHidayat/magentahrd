@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
@@ -40,6 +41,8 @@ import 'package:geolocator/geolocator.dart';
 import 'dart:async';
 import 'package:geocode/geocode.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
+import 'package:magentahrd/services/api_clien.dart';
 
 const double CAMERA_ZOOM = 16;
 const double CAMERA_TILT = 80;
@@ -128,6 +131,7 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     getDataPref();
+
     _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
       _getCurrentLocation();
     });
@@ -327,6 +331,7 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
     setState(() {
       isTrack = sharedPreferences.getBool("isTrack") ?? false;
       employeeId = sharedPreferences.getString("employee_id") ?? "22";
+      _employee(employeeId);
     });
 
     controller.fetchCheckinByEmployeId(id: employeeId);
@@ -338,7 +343,7 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
       setState(() {
         name = value.docs[0]['name'];
         address = value.docs[0]['address'];
-        photo = value.docs[0]['photo'];
+        //  photo = value.docs[0]['photo'];
       });
     });
   }
@@ -583,7 +588,7 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
                                             : CircleAvatar(
                                                 radius: 25,
                                                 backgroundImage:
-                                                    NetworkImage('')),
+                                                    NetworkImage(photo)),
                                         Container(
                                           margin: EdgeInsets.only(left: 15),
                                           child: Column(
@@ -1168,7 +1173,17 @@ class TrackPageState extends State<TrackPage> with WidgetsBindingObserver {
 
     super.dispose();
   }
+
+  Future _employee(id) async {
+    final response = await http.get(Uri.parse("$base_url/api/employees/${id}"));
+    final data = jsonDecode(response.body);
+
+    if (data['code'] == 200) {
+      photo = data['data']['photo'];
+    } else {}
+  }
 }
+
 
 // class BackGroundWork {
 //   BackGroundWork._privateConstructor();
